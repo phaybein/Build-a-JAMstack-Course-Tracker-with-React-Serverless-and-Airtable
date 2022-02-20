@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Tags from './Tags';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import * as API from './coursesAPI';
 
-export default function CourseForm({ courseAdded }) {
+export default function CourseForm() {
     const [name, setName] = useState('');
     const [link, setLink] = useState('');
     const [tags, setTags] = useState([]);
@@ -13,12 +15,29 @@ export default function CourseForm({ courseAdded }) {
         setCount(count + 1);
     };
 
+	const queryClient = useQueryClient();
+
+    const { isLoading: postIsLoading, mutate: postCourse, isError: postError } = useMutation(API.postCourse, {
+        onSuccess: () => {
+            queryClient.invalidateQueries('get-courses')
+        }
+    })
     const submitCourse = async (e) => {
         e.preventDefault();
         //TODO: Create the course
+        const data = {
+            name,
+            link,
+            tags,
+        };
+        postCourse(data);
         resetForm();
-        courseAdded();
+        // courseAdded();
     };
+
+    if(postIsLoading) return 'Loading...';
+
+    if(postError) return `Error: ${postError.message}`;
 
     return (
         <div className="card">

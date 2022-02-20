@@ -1,13 +1,31 @@
 import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import * as API from './coursesAPI';
 
-export default function Course({ course, refreshCourses }) {
-    const markCoursePurchased = async () => {
-        //TODO mark course as purchased
-    };
 
-    const deleteCourse = async () => {
-        //TODO delete course
-    };
+export default function Course({ course }) {
+    const queryClient = useQueryClient();
+    // * UPDATE COURSE
+	const { isLoading: courseIsLoading, mutate: updateCourse } = useMutation(API.updateCourse, {
+		onSuccess: () => {
+			queryClient.invalidateQueries('get-courses')
+		}
+	});
+
+    // * DELETE COURSE
+	const { isLoading: deleteIsLoading, mutate: deleteCourseMutation } = useMutation(API.deleteCourse, {
+		onSuccess: () => {
+			queryClient.invalidateQueries('get-courses')
+		}
+	});
+    const markCoursePurchased = async () => { updateCourse(course) };
+
+    const deleteCourse = async () => { deleteCourseMutation(course) };
+
+    if(courseIsLoading) return 'Loading...'
+
+    if(deleteIsLoading) return `Deleting, ${course.name}...`
+
     return (
         <div className="list-group-item">
             <a href={course.link}>

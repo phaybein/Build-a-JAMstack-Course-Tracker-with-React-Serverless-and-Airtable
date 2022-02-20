@@ -2,22 +2,22 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import CourseList from './components/CourseList';
 import CourseForm from './components/CourseForm';
+import { useQuery } from 'react-query';
+
+import * as API from './appApi';
 
 function App() {
-    const [courses, setCourses] = useState([]);
+    const { isLoading: coursesIsLoading, data: courses, isError: coursesIsError, isFetching: coursesIsFetching } = useQuery('get-courses', API.getCourses);
 
-    const loadCourses = async () => {
-        //TODO:load the courses
-    };
+    if(coursesIsLoading) return 'Loading...';
 
-    useEffect(() => {
-        loadCourses();
-    }, []);
+    if(coursesIsError) return 'Error...';
+   
     return (
         <div className="container mt-5">
             <h1 className="mb-5 text-center">Course Tracker</h1>
-            <CourseForm courseAdded={loadCourses} />
-            <CourseList courses={courses} refreshCourses={loadCourses} />
+            <CourseForm />
+            <CourseList courses={courses} coursesIsLoading={coursesIsLoading} refreshCourses={coursesIsFetching} />
         </div>
     );
 }
